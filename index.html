@@ -1,12 +1,24 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>委刊表填寫與簽名</title>
   <style>
-    body { text-align: center; font-family: Arial, sans-serif; }
-    #container { position: relative; display: inline-block; }
-    #formImage { width: 800px; }
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    #container {
+      position: relative;
+      display: inline-block;
+    }
+    #formImage {
+      width: 800px;
+      max-width: 100%;
+    }
     .inputField {
       position: absolute;
       font-size: 16px;
@@ -21,18 +33,24 @@
     }
     #signatureButton {
       position: absolute;
-      top: 1435px;
-      left: 270px;
+      top: 920px;
+      left: 260px;
+      color: red;
+      z-index: 10;
+      background-color: rgba(255,255,255,0.9);
     }
     #signaturePreview {
       position: absolute;
-      top: 1435px;
-      left: 270px;
+      top: 890px;
+      left: 230px;
       width: 250px;
       height: 80px;
       pointer-events: none;
+      border: 1px solid #ccc;
     }
-    #btnGroup { margin-top: 80px; }
+    #btnGroup {
+      margin-top: 80px;
+    }
   </style>
 </head>
 <body>
@@ -55,10 +73,9 @@
     <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;" title="5.半頁">
     <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;" title="6.年會特刊">
 
-    <button id="signatureButton" style="position:absolute; top:920px; left:260px; color:red; z-index:10; background-color:rgba(255,255,255,0.9);" onclick="openSignature()">點擊簽名</button>
-    <img id="signaturePreview"
-     src=""
-     style="position: absolute; top: 890px; left: 230px; width: 250px; height: 80px;" />
+    <!-- 簽名按鈕與預覽 -->
+    <button id="signatureButton" onclick="openSignature()">點擊簽名</button>
+    <img id="signaturePreview" src="">
   </div>
 
   <div id="btnGroup">
@@ -68,58 +85,101 @@
 
   <script>
     function openSignature() {
-      const popup = window.open("", "_blank", "width=500,height=400");
+      const popup = window.open("", "_blank");
       popup.document.write(`
         <html>
-        <head><title>簽名畫布</title>
-        <style>
-          body { text-align: center; font-family: Arial; }
-          canvas { border: 1px solid #000; margin-top: 20px; }
-        </style>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>簽名畫布</title>
+          <style>
+            html, body {
+              margin: 0;
+              padding: 0;
+              text-align: center;
+              font-family: Arial;
+            }
+            canvas {
+              width: 100vw;
+              height: 70vh;
+              border: 2px solid black;
+              touch-action: none;
+            }
+            button {
+              margin-top: 20px;
+              font-size: 18px;
+              padding: 10px 20px;
+            }
+          </style>
         </head>
         <body>
-          <h3>請簽名</h3>
-          <canvas id="sigCanvas" width="400" height="200"></canvas><br>
-          <button onclick="sendSignature()">返回</button>
+          <h2>請簽名</h2>
+          <canvas id="sigCanvas"></canvas><br>
+          <button onclick="submitSignature()">簽名完成</button>
+
           <script>
-            const canvas = document.getElementById('sigCanvas');
-            const ctx = canvas.getContext('2d');
-            let isDrawing = false;
+            const canvas = document.getElementById("sigCanvas");
+            const ctx = canvas.getContext("2d");
 
-            canvas.addEventListener('mousedown', e => {
-              isDrawing = true;
-              ctx.beginPath();
-              ctx.moveTo(e.offsetX, e.offsetY);
-            });
-            canvas.addEventListener('mousemove', e => {
-              if (isDrawing) {
-                ctx.lineTo(e.offsetX, e.offsetY);
-                ctx.stroke();
-              }
-            });
-            canvas.addEventListener('mouseup', () => isDrawing = false);
-            canvas.addEventListener('mouseleave', () => isDrawing = false);
-            canvas.addEventListener('touchstart', e => {
-              const touch = e.touches[0];
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight * 0.7;
+
+            let drawing = false;
+
+            function getTouchPos(e) {
               const rect = canvas.getBoundingClientRect();
+              const touch = e.touches[0];
+              return {
+                x: touch.clientX - rect.left,
+                y: touch.clientY - rect.top
+              };
+            }
+
+            function getMousePos(e) {
+              const rect = canvas.getBoundingClientRect();
+              return {
+                x: e.clientX - rect.left,
+                y: e.clientY - rect.top
+              };
+            }
+
+            canvas.addEventListener("mousedown", e => {
+              drawing = true;
+              const pos = getMousePos(e);
               ctx.beginPath();
-              ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-              isDrawing = true;
+              ctx.moveTo(pos.x, pos.y);
             });
-            canvas.addEventListener('touchmove', e => {
+
+            canvas.addEventListener("mousemove", e => {
+              if (!drawing) return;
+              const pos = getMousePos(e);
+              ctx.lineTo(pos.x, pos.y);
+              ctx.stroke();
+            });
+
+            canvas.addEventListener("mouseup", () => drawing = false);
+            canvas.addEventListener("mouseleave", () => drawing = false);
+
+            canvas.addEventListener("touchstart", e => {
               if (e.cancelable) e.preventDefault();
-              const touch = e.touches[0];
-              const rect = canvas.getBoundingClientRect();
-              if (isDrawing) {
-                ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-                ctx.stroke();
-              }
-            }, { passive: false });
-            canvas.addEventListener('touchend', () => isDrawing = false);
+              drawing = true;
+              const pos = getTouchPos(e);
+              ctx.beginPath();
+              ctx.moveTo(pos.x, pos.y);
+            });
 
-            function sendSignature() {
-              const dataURL = canvas.toDataURL('image/png');
-              window.opener.document.getElementById('signaturePreview').src = dataURL;
+            canvas.addEventListener("touchmove", e => {
+              if (e.cancelable) e.preventDefault();
+              if (!drawing) return;
+              const pos = getTouchPos(e);
+              ctx.lineTo(pos.x, pos.y);
+              ctx.stroke();
+            }, { passive: false });
+
+            canvas.addEventListener("touchend", () => drawing = false);
+
+            function submitSignature() {
+              const dataURL = canvas.toDataURL("image/png");
+              window.opener.document.getElementById("signaturePreview").src = dataURL;
               window.close();
             }
           <\/script>
