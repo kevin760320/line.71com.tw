@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>簽名頁面</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: #fff;
+    }
+    canvas {
+      border: 2px solid #000;
+      touch-action: none;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="signatureCanvas"></canvas>
+  <button onclick="finishSignature()">完成</button>
+
+  <script>
+    let canvas = document.getElementById('signatureCanvas');
+    let ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight - 60;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+    }
+    resizeCanvas();
+
+    window.addEventListener('resize', resizeCanvas);
+
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.clientX, e.clientY);
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (drawing) {
+        ctx.lineTo(e.clientX, e.clientY);
+        ctx.stroke();
+      }
+    });
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseleave', () => drawing = false);
+
+    canvas.addEventListener('touchstart', e => {
+      drawing = true;
+      const touch = e.touches[0];
+      ctx.beginPath();
+      ctx.moveTo(touch.clientX, touch.clientY);
+    });
+    canvas.addEventListener('touchmove', e => {
+      if (drawing) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        ctx.lineTo(touch.clientX, touch.clientY);
+        ctx.stroke();
+      }
+    });
+    canvas.addEventListener('touchend', () => drawing = false);
+
+    // 完成簽名並回傳給主頁面
+    function finishSignature() {
+      let dataUrl = canvas.toDataURL('image/png');
+      window.opener.postMessage({ type: 'signature', dataUrl: dataUrl }, '*');
+      window.close();
+    }
+  </script>
+</body>
+</html>
