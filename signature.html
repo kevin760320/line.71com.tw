@@ -87,8 +87,18 @@
     // 完成按鈕函數 (含手機端修正)
     function finishSignature() {
       const dataUrl = canvas.toDataURL('image/png');
+      
+      // 使用 localStorage 傳遞資料
+      localStorage.setItem('signatureData', dataUrl);
+
+      // 嘗試關閉視窗 (適用於電腦端)
       window.opener.postMessage({ type: 'signature', dataUrl: dataUrl }, '*');
       window.close();
+
+      // 若 window.close() 無效 (手機端)，則導回主頁
+      setTimeout(() => {
+        window.location.href = document.referrer;
+      }, 500);
     }
 
     document.getElementById('finishBtn').addEventListener('click', finishSignature);
