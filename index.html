@@ -1,24 +1,12 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>委刊表填寫與簽名</title>
   <style>
-    body {
-      text-align: center;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-    }
-    #container {
-      position: relative;
-      display: inline-block;
-    }
-    #formImage {
-      width: 800px;
-      max-width: 100%;
-    }
+    body { text-align: center; font-family: Arial, sans-serif; }
+    #container { position: relative; display: inline-block; }
+    #formImage { width: 800px; }
     .inputField {
       position: absolute;
       font-size: 16px;
@@ -31,26 +19,15 @@
       position: absolute;
       transform: scale(1.5);
     }
-    #signatureButton {
+    #signatureCanvas {
       position: absolute;
-      top: 920px;
-      left: 260px;
-      color: red;
-      z-index: 10;
-      background-color: rgba(255,255,255,0.9);
-    }
-    #signaturePreview {
-      position: absolute;
-      top: 890px;
-      left: 230px;
+      top: 1435px;
+      left: 270px;
+      border: 1px solid #000;
       width: 250px;
       height: 80px;
-      pointer-events: none;
-      border: 1px solid #ccc;
     }
-    #btnGroup {
-      margin-top: 80px;
-    }
+    #btnGroup { margin-top: 80px; }
   </style>
 </head>
 <body>
@@ -73,173 +50,80 @@
     <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;" title="5.半頁">
     <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;" title="6.年會特刊">
 
-    <!-- 簽名按鈕與預覽 -->
-    <button id="signatureButton" onclick="openSignature()">點擊簽名</button>
-    <img id="signaturePreview" src="">
-  </div>
 
-  <div id="btnGroup">
-    <button onclick="clearAll()">清除內容</button>
-    <button onclick="downloadPNG()">下載PNG</button>
+    <button id="signatureButton" style="position:absolute; top:920px; left:260px; color:red; z-index:10; background-color:rgba(255,255,255,0.9);" onclick="openSignature()">點擊簽名</button>
+    <img id="signaturePreview"
+     src=""
+     style="position: absolute; top: 890px; left: 230px; width: 250px; height: 80px;" />
+    <canvas id="signatureCanvas"></canvas>
+
+ </div>
+
+    
+
+    <div id="btnGroup">
+      <button onclick="clearCanvas()">清除簽名</button>
+      <button onclick="submitSignature()">提交簽名</button>
+    </div>
+
   </div>
 
   <script>
-    function openSignature() {
-      const popup = window.open("", "_blank");
-      popup.document.write(`
-        <html>
-        <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>簽名畫布</title>
-          <style>
-            html, body {
-              margin: 0;
-              padding: 0;
-              text-align: center;
-              font-family: Arial;
-            }
-            canvas {
-              width: 100vw;
-              height: 70vh;
-              border: 2px solid black;
-              touch-action: none;
-            }
-            button {
-              margin-top: 20px;
-              font-size: 18px;
-              padding: 10px 20px;
-            }
-          </style>
-        </head>
-        <body>
-          <h2>請簽名</h2>
-          <canvas id="sigCanvas"></canvas><br>
-          <button onclick="submitSignature()">簽名完成</button>
+    let canvas = document.getElementById('signatureCanvas');
+    let ctx = canvas.getContext('2d');
+    let drawing = false;
 
-          <script>
-            const canvas = document.getElementById("sigCanvas");
-            const ctx = canvas.getContext("2d");
-
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight * 0.7;
-
-            let drawing = false;
-
-            function getTouchPos(e) {
-              const rect = canvas.getBoundingClientRect();
-              const touch = e.touches[0];
-              return {
-                x: touch.clientX - rect.left,
-                y: touch.clientY - rect.top
-              };
-            }
-
-            function getMousePos(e) {
-              const rect = canvas.getBoundingClientRect();
-              return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-              };
-            }
-
-            canvas.addEventListener("mousedown", e => {
-              drawing = true;
-              const pos = getMousePos(e);
-              ctx.beginPath();
-              ctx.moveTo(pos.x, pos.y);
-            });
-
-            canvas.addEventListener("mousemove", e => {
-              if (!drawing) return;
-              const pos = getMousePos(e);
-              ctx.lineTo(pos.x, pos.y);
-              ctx.stroke();
-            });
-
-            canvas.addEventListener("mouseup", () => drawing = false);
-            canvas.addEventListener("mouseleave", () => drawing = false);
-
-            canvas.addEventListener("touchstart", e => {
-              if (e.cancelable) e.preventDefault();
-              drawing = true;
-              const pos = getTouchPos(e);
-              ctx.beginPath();
-              ctx.moveTo(pos.x, pos.y);
-            });
-
-            canvas.addEventListener("touchmove", e => {
-              if (e.cancelable) e.preventDefault();
-              if (!drawing) return;
-              const pos = getTouchPos(e);
-              ctx.lineTo(pos.x, pos.y);
-              ctx.stroke();
-            }, { passive: false });
-
-            canvas.addEventListener("touchend", () => drawing = false);
-
-            function submitSignature() {
-              const dataURL = canvas.toDataURL("image/png");
-              window.opener.document.getElementById("signaturePreview").src = dataURL;
-              window.close();
-            }
-          <\/script>
-        </body>
-        </html>
-      `);
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     }
+    resizeCanvas();
 
-    function clearAll() {
-      document.querySelectorAll('.inputField').forEach(input => input.value = '');
-      document.querySelectorAll('.checkbox').forEach(chk => chk.checked = false);
-      document.getElementById('signaturePreview').src = "";
-    }
-
-    function downloadPNG() {
-      const img = document.getElementById("formImage");
-      const scale = img.naturalWidth / img.width;
-      const tempCanvas = document.createElement("canvas");
-      tempCanvas.width = img.naturalWidth;
-      tempCanvas.height = img.naturalHeight;
-      const tempCtx = tempCanvas.getContext("2d");
-      tempCtx.drawImage(img, 0, 0, tempCanvas.width, tempCanvas.height);
-
-      document.querySelectorAll('.inputField').forEach(input => {
-        const style = window.getComputedStyle(input);
-        const fontSize = parseInt(style.fontSize) * scale;
-        const x = input.offsetLeft * scale;
-        const y = (input.offsetTop + input.offsetHeight - 5) * scale;
-        tempCtx.font = fontSize + "px Arial";
-        tempCtx.fillStyle = "#000";
-        tempCtx.fillText(input.value, x, y);
-      });
-
-      document.querySelectorAll('.checkbox').forEach(chk => {
-        if (chk.checked) {
-          const x = chk.offsetLeft * scale;
-          const y = chk.offsetTop * scale;
-          tempCtx.fillStyle = "#000";
-          tempCtx.fillText("✓", x + 4, y + 18);
-        }
-      });
-
-      const signatureImg = document.getElementById('signaturePreview');
-      if (signatureImg.src) {
-        const sig = new Image();
-        sig.onload = () => {
-          tempCtx.drawImage(sig, signatureImg.offsetLeft * scale, signatureImg.offsetTop * scale, signatureImg.width * scale, signatureImg.height * scale);
-          const link = document.createElement("a");
-          link.download = "委刊表_填寫完成.png";
-          link.href = tempCanvas.toDataURL("image/png");
-          link.click();
-        };
-        sig.src = signatureImg.src;
-      } else {
-        const link = document.createElement("a");
-        link.download = "委刊表_填寫完成.png";
-        link.href = tempCanvas.toDataURL("image/png");
-        link.click();
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (drawing) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.stroke();
       }
+    });
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseleave', () => drawing = false);
+
+    canvas.addEventListener('touchstart', e => {
+      drawing = true;
+      const touch = e.touches[0];
+      const rect = canvas.getBoundingClientRect();
+      ctx.beginPath();
+      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    });
+    canvas.addEventListener('touchmove', e => {
+      if (drawing) {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const rect = canvas.getBoundingClientRect();
+        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+        ctx.stroke();
+      }
+    });
+    canvas.addEventListener('touchend', () => drawing = false);
+
+    function clearCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+
+    function submitSignature() {
+      let signatureData = canvas.toDataURL('image/png');
+      console.log(signatureData);
+      alert('簽名已提交，可於控制台查看Base64字串或後續實現上傳功能。');
+    }
+
+    window.addEventListener('resize', resizeCanvas);
   </script>
 </body>
 </html>
