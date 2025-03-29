@@ -12,20 +12,6 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      backgroun<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>簽名頁面</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       background-color: #fff;
       flex-direction: column;
     }
@@ -67,7 +53,7 @@
     }
     resizeCanvas();
 
-    // 電腦滑鼠事件
+    // 滑鼠事件
     canvas.addEventListener('mousedown', (e) => {
       drawing = true;
       ctx.beginPath();
@@ -82,7 +68,7 @@
     canvas.addEventListener('mouseup', () => drawing = false);
     canvas.addEventListener('mouseleave', () => drawing = false);
 
-    // 手機觸控事件
+    // 觸控事件
     canvas.addEventListener('touchstart', (e) => {
       drawing = true;
       const rect = canvas.getBoundingClientRect();
@@ -114,104 +100,6 @@
       window.opener.postMessage({ type: 'signature', dataUrl: dataUrl }, '*');
       window.close();
     }
-  </script>
-</body>
-</html>d-color: #fff;
-      flex-direction: column;
-    }
-    canvas {
-      border: 2px solid #000;
-      touch-action: none;
-      width: 400px;
-      height: 600px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 18px;
-    }
-  </style>
-</head>
-<body>
-  <canvas id="signatureCanvas"></canvas>
-  <button id="finishBtn">完成</button>
-
-  <script>
-    const canvas = document.getElementById('signatureCanvas');
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
-
-    function resizeCanvas() {
-      canvas.width = 400;
-      canvas.height = 600;
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = '#000';
-    }
-    resizeCanvas();
-
-    // 電腦端滑鼠事件
-    canvas.addEventListener('mousedown', (e) => {
-      drawing = true;
-      ctx.beginPath();
-      ctx.moveTo(e.offsetX, e.offsetY);
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-      if (drawing) {
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.stroke();
-      }
-    });
-
-    canvas.addEventListener('mouseup', () => drawing = false);
-    canvas.addEventListener('mouseleave', () => drawing = false);
-
-    // 手機端觸控事件
-    canvas.addEventListener('touchstart', (e) => {
-      drawing = true;
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.beginPath();
-      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-    });
-
-    canvas.addEventListener('touchmove', (e) => {
-      if (drawing) {
-        e.preventDefault();
-        const rect = canvas.getBoundingClientRect();
-        const touch = e.touches[0];
-        ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-        ctx.stroke();
-      }
-    });
-
-    canvas.addEventListener('touchend', () => drawing = false);
-
-    // 完成按鈕函數 (含手機端修正)
-    function finishSignature() {
-      const dataUrl = canvas.toDataURL('image/png');
-      
-      // 使用 localStorage 傳遞資料
-      localStorage.setItem('signatureData', dataUrl);
-
-      // 嘗試關閉視窗 (適用於電腦端)
-      window.opener.postMessage({ type: 'signature', dataUrl: dataUrl }, '*');
-      window.close();
-
-      // 若 window.close() 無效 (手機端)，則導回主頁
-      setTimeout(() => {
-        window.location.href = document.referrer;
-      }, 500);
-    }
-
-    document.getElementById('finishBtn').addEventListener('click', finishSignature);
-
-    // 手機端按鈕修正
-    document.getElementById('finishBtn').addEventListener('touchend', (e) => {
-      e.preventDefault();
-      finishSignature();
-    });
   </script>
 </body>
 </html>
