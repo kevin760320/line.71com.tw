@@ -21,20 +21,29 @@
     }
     #signaturePreview {
       position: absolute;
-      top: 1435px; /* 可調整 Y 座標 */
-      left: 270px; /* 可調整 X 座標 */
-      width: 400px;
-      height: 600px;
-      border: 1px solid #000;
+      top: 880px;
+      left: 230px;
+      width: 200px;
+      height: 80px;
       pointer-events: none;
     }
-    #signatureButton {
+    .btnResizable {
       position: absolute;
-      top: 1435px;
-      left: 680px;
+      resize: both;
+      overflow: auto;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
     }
-    #btnGroup { margin-top: 80px; }
+    #signatureButton { top: 890px; left: 470px; color: #ff0000; }
+    #downloadButton { top: 1120px; left: 250px; }
+    #clearButton { top: 1120px; left: 350px; }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
   <h2>委刊表填寫與簽名</h2>
@@ -57,12 +66,11 @@
     <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;" title="6.年會特刊">
     <img id="signaturePreview" src="">
 
-    <button id="signatureButton" onclick="openSignaturePage()">點擊簽名</button>
+    <div id="signatureButton" class="btnResizable" onclick="openSignaturePage()">點擊簽名</div>
 
-    <div id="btnGroup">
-      <button onclick="downloadPNG()">下載png</button>
-      <button onclick="clearContent()">清除內容</button>
-    </div>
+    <div id="downloadButton" class="btnResizable" onclick="downloadPNG()">下載png</div>
+
+    <div id="clearButton" class="btnResizable" onclick="clearContent()">清除內容</div>
   </div>
 
   <script>
@@ -85,15 +93,27 @@
     });
 
     function downloadPNG() {
-      let link = document.createElement('a');
-      link.href = document.getElementById('signaturePreview').src;
-      link.download = 'signature.png';
-      link.click();
+      document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'hidden');
+
+      html2canvas(document.querySelector("#container")).then(canvas => {
+        let link = document.createElement('a');
+        link.href = canvas.toDataURL();
+        link.download = 'form_with_signature.png';
+        link.click();
+
+        document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'visible');
+      });
     }
 
     function clearContent() {
       document.getElementById('signaturePreview').src = '';
       localStorage.removeItem('signatureData');
+
+      const inputs = document.querySelectorAll('.inputField');
+      inputs.forEach(input => input.value = '');
+
+      const checkboxes = document.querySelectorAll('.checkbox');
+      checkboxes.forEach(checkbox => checkbox.checked = false);
     }
   </script>
 </body>
