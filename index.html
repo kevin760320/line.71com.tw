@@ -124,7 +124,11 @@
     }
 
     function previewFormImage() {
-      html2canvas(document.querySelector("#container")).then(canvas => {
+      html2canvas(document.querySelector("#container"), { scale: 1 }).then(canvas => {
+        const base64Image = canvas.toDataURL("image/png").split(",")[1];
+        const byteLength = Math.floor((base64Image.length * 3) / 4);
+        console.log("圖片大小約：", (byteLength / 1024).toFixed(2), "KB");
+
         const previewCanvas = document.getElementById("previewCanvas");
         previewCanvas.width = canvas.width;
         previewCanvas.height = canvas.height;
@@ -143,6 +147,8 @@
 
       document.getElementById("loadingSpinner").style.display = "block";
       const base64Image = latestCanvas.toDataURL("image/png").split(",")[1];
+      const byteLength = Math.floor((base64Image.length * 3) / 4);
+      console.log("寄出圖檔大小：約", (byteLength / 1024).toFixed(2), "KB");
 
       const payload = {
         from_name: "Kevin 測試系統",
