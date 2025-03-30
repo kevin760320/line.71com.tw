@@ -23,8 +23,8 @@
     }
     #finishBtn {
       margin-top: 20px;
-      width: 150px; /* 按鈕寬度可在此調整 */
-      height: 50px; /* 按鈕高度可在此調整 */
+      width: 150px;
+      height: 50px;
       font-size: 18px;
       background-color: #f0f0f0;
       border: 1px solid #ccc;
@@ -65,7 +65,6 @@
     }
     resizeCanvas();
 
-    // 滑鼠事件
     canvas.addEventListener('mousedown', (e) => {
       drawing = true;
       ctx.beginPath();
@@ -80,7 +79,6 @@
     canvas.addEventListener('mouseup', () => drawing = false);
     canvas.addEventListener('mouseleave', () => drawing = false);
 
-    // 觸控事件
     canvas.addEventListener('touchstart', (e) => {
       drawing = true;
       const rect = canvas.getBoundingClientRect();
@@ -99,7 +97,6 @@
     });
     canvas.addEventListener('touchend', () => drawing = false);
 
-    // 點擊完成按鈕功能
     finishBtn.addEventListener('click', finishSignature);
     finishBtn.addEventListener('touchend', (e) => {
       e.preventDefault();
@@ -111,12 +108,10 @@
 
       const dataUrl = canvas.toDataURL('image/png');
       localStorage.setItem('signatureData', dataUrl);
-      window.opener.postMessage({ type: 'signature', dataUrl: dataUrl }, '*');
-
+      
       showCountdownMessage(10);
     }
 
-    // 顯示倒數訊息
     function showCountdownMessage(seconds) {
       message.style.display = 'block';
       message.style.color = 'red';
@@ -136,7 +131,6 @@
       }, 1000);
     }
 
-    // 調整訊息位置至簽名區中央
     function updateMessagePosition() {
       const rect = canvas.getBoundingClientRect();
       message.style.top = `${rect.top + rect.height / 2 - 20}px`;
@@ -145,7 +139,6 @@
 
     window.addEventListener('resize', updateMessagePosition);
 
-    // 新增返回上一頁按鈕
     function createBackButton() {
       const backBtn = document.createElement('div');
       backBtn.textContent = '返回上一頁';
@@ -161,7 +154,7 @@
         justify-content: center;
         cursor: pointer;
       `;
-      backBtn.onclick = () => window.close();
+      backBtn.onclick = () => window.history.back();
       document.body.appendChild(backBtn);
     }
   </script>
