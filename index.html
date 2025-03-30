@@ -21,20 +21,18 @@
     }
     #signaturePreview {
       position: absolute;
-      top: 880px;
-      left: 230px;
-      width: 200px;
-      height: 80px;
+      top: 1435px;
+      left: 270px;
+      width: 400px;
+      height: 600px;
       pointer-events: none;
     }
     #signatureButton {
       position: absolute;
-      top: 890px;
-      left: 470px;
+      top: 2050px;
+      left: 680px;
     }
-    #btnGroup {
-      margin-top: 80px;
-    }
+    #btnGroup { margin-top: 80px; }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -60,14 +58,12 @@
 
     <img id="signaturePreview" src="">
     <button id="signatureButton" onclick="openSignaturePage()">點擊簽名</button>
-
     <div id="btnGroup">
       <button onclick="downloadPNG()">下載png</button>
       <button onclick="clearContent()">清除內容</button>
-      <button onclick="sendFormViaGAS()">發送表單到指定郵箱</button>
+      <button onclick="sendForm()">發送表單到指定郵箱</button>
     </div>
   </div>
-
   <script>
     function openSignaturePage() {
       localStorage.removeItem('signatureData');
@@ -105,12 +101,12 @@
       checkboxes.forEach(checkbox => checkbox.checked = false);
     }
 
-    function sendFormViaGAS() {
+    function sendForm() {
       html2canvas(document.querySelector("#container")).then(canvas => {
-        const base64Image = canvas.toDataURL("image/png").split("base64,")[1];
+        const base64Image = canvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
 
         const payload = {
-          from_name: "委刊表單簽名系統",
+          from_name: "Kevin 測試系統",
           to_email: ["kevin.hsia@icloud.com"],
           to_name: ["Kevin"],
           image_data: base64Image
@@ -118,21 +114,17 @@
 
         fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "success") {
-            alert("已成功寄出表單！");
-          } else {
-            alert("發送失敗：" + data.message);
-          }
+        .then(response => response.text())
+        .then(result => {
+          alert("表單已成功發送！");
+          console.log("Success:", result);
         })
-        .catch(err => {
-          alert("發送錯誤：" + err.message);
+        .catch(error => {
+          alert("發送錯誤，請稍後再試。\n" + (error.stack || error.message));
+          console.error("Fetch Error:", error);
         });
       });
     }
