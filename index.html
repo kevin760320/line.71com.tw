@@ -32,16 +32,16 @@
       top: 2050px;
       left: 680px;
     }
-    #btnGroup { margin-top: 80px; }
+    #btnGroup { margin-top: 40px; }
     #previewCanvasWrapper {
-      margin-top: 40px;
       display: none;
+      margin-top: 20px;
     }
     #loadingSpinner {
       display: none;
-      margin-top: 20px;
-      font-weight: bold;
+      margin-top: 10px;
       color: red;
+      font-weight: bold;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -68,127 +68,80 @@
     <img id="signaturePreview" src="">
     <button id="signatureButton" onclick="openSignaturePage()">點擊簽名</button>
     <div id="btnGroup">
-      <button onclick="downloadPNG()">下載png</button>
-      <button onclick="clearContent()">清除內容</button>
-      <button onclick="previewFormImage()">預覽即將寄出的圖檔</button>
+      <button onclick="prepareScreenshot()">發送郵件</button>
     </div>
   </div>
 
   <div id="previewCanvasWrapper">
-    <p>請確認下方預覽圖是否正確後再寄出：</p>
-    <canvas id="previewCanvas" style="border: 2px solid #000;"></canvas>
+    <h4>預覽圖（將寄出的內容）</h4>
+    <img id="previewImage" style="max-width: 100%; border: 1px solid #ccc;">
     <br>
-    <button onclick="confirmAndSendImage()">確定寄出</button>
+    <button onclick="sendEmail()">確定寄出</button>
   </div>
-
-  <div id="loadingSpinner">寄出中，請稍候...</div>
+  <div id="loadingSpinner">郵件寄出中，請稍後...</div>
 
   <script>
-    let latestCanvas = null;
-
     function openSignaturePage() {
       localStorage.removeItem('signatureData');
       window.open('signature.html', '_blank');
     }
 
-    window.addEventListener('storage', function(event) {
-      if (event.key === 'signatureData') {
-        document.getElementById('signaturePreview').src = event.newValue;
-        console.log("從 localStorage 接收到簽名資料");
-      }
-    });
-
-    window.addEventListener('focus', function() {
+    window.addEventListener('focus', () => {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) {
         document.getElementById('signaturePreview').src = dataUrl;
-        console.log("頁面重新聚焦，重新載入簽名圖片");
       }
     });
 
-    function downloadPNG() {
+    function prepareScreenshot() {
       html2canvas(document.querySelector("#container")).then(canvas => {
-        let link = document.createElement('a');
-        link.href = canvas.toDataURL();
-        link.download = 'form_with_signature.png';
-        link.click();
-        console.log("圖片已下載");
-      }).catch(err => {
-        console.error("下載圖片時出錯：", err);
+        const dataUrl = canvas.toDataURL("image/png");
+        document.getElementById('previewImage').src = dataUrl;
+        document.getElementById('previewCanvasWrapper').style.display = 'block';
+        window.imageDataForEmail = dataUrl.replace(/^data:image\/png;base64,/, "");
+      }).catch(error => {
+        alert("無法產生預覽圖，請稍後再試。\n" + error.message);
+        console.error("html2canvas error:", error);
       });
     }
 
-    function clearContent() {
-      document.getElementById('signaturePreview').src = '';
-      localStorage.removeItem('signatureData');
-      const inputs = document.querySelectorAll('.inputField');
-      inputs.forEach(input => input.value = '');
-      const checkboxes = document.querySelectorAll('.checkbox');
-      checkboxes.forEach(checkbox => checkbox.checked = false);
-      console.log("清除所有輸入內容");
-    }
-
-    function previewFormImage() {
-      html2canvas(document.querySelector("#container"), { scale: 1 }).then(canvas => {
-        const base64Image = canvas.toDataURL("image/png").split(",")[1];
-        const byteLength = Math.floor((base64Image.length * 3) / 4);
-        console.log("圖片大小約：", (byteLength / 1024).toFixed(2), "KB");
-
-        const previewCanvas = document.getElementById("previewCanvas");
-        previewCanvas.width = canvas.width;
-        previewCanvas.height = canvas.height;
-        const ctx = previewCanvas.getContext("2d");
-        ctx.drawImage(canvas, 0, 0);
-        latestCanvas = canvas;
-        document.getElementById("previewCanvasWrapper").style.display = "block";
-        console.log("預覽圖已產生");
-      }).catch(err => {
-        console.error("產生預覽圖時出錯：", err);
-      });
-    }
-
-    function confirmAndSendImage() {
-      if (!latestCanvas) {
-        alert("請先點擊預覽圖檔");
-        console.warn("無預覽圖可寄出");
+    function sendEmail() {
+      if (!window.imageDataForEmail) {
+        alert("尚未產生圖片資料，請先預覽");
         return;
       }
 
-      document.getElementById("loadingSpinner").style.display = "block";
-      const base64Image = latestCanvas.toDataURL("image/png").split(",")[1];
-      const byteLength = Math.floor((base64Image.length * 3) / 4);
-      console.log("寄出圖檔大小：約", (byteLength / 1024).toFixed(2), "KB");
+      document.getElementById('loadingSpinner').style.display = 'block';
 
       const payload = {
         from_name: "Kevin 測試系統",
         to_email: ["kevin.hsia@icloud.com"],
-        to_name: ["Kevin"],
-        image_data: base64Image
+        to_name: ["收件者"],
+        image_data: window.imageDataForEmail
       };
 
-      console.log("即將寄出資料：", payload);
-
-      fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
+      fetch("https://script.google.com/macros/s/你的_GAS_exec網址/exec", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       })
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error("伺服器回應錯誤: " + res.status);
+        return res.json();
+      })
       .then(data => {
-        document.getElementById("loadingSpinner").style.display = "none";
-        console.log("寄送回應：", data);
         if (data.status === "success") {
-          alert("✅ 表單已成功寄出！");
+          document.getElementById('loadingSpinner').innerText = "✅ 郵件已成功寄出！";
         } else {
-          alert("❌ 發送失敗：" + data.message);
+          alert("❌ 郵件發送失敗：" + (data.message || "未知錯誤"));
+          console.error("Response:", data);
+          document.getElementById('loadingSpinner').style.display = 'none';
         }
       })
-      .catch(error => {
-        document.getElementById("loadingSpinner").style.display = "none";
-        alert("❌ 發送錯誤：" + (error.stack || error.message));
-        console.error("Fetch Error:", error);
+      .catch(err => {
+        alert("❌ 發送過程發生錯誤：" + err.message);
+        console.error("Fetch Error:", err);
+        document.getElementById('loadingSpinner').style.display = 'none';
       });
     }
   </script>
