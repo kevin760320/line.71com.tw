@@ -21,16 +21,16 @@
     }
     #signaturePreview {
       position: absolute;
-      top: 880px;
-      left: 230px;
-      width: 200px;
-      height: 80px;
+      top: 1435px;
+      left: 270px;
+      width: 400px;
+      height: 600px;
       pointer-events: none;
     }
     #signatureButton {
       position: absolute;
-      top: 890px;
-      left: 470px;
+      top: 2050px;
+      left: 680px;
     }
     #btnGroup { margin-top: 80px; }
     #previewCanvasWrapper {
@@ -65,7 +65,6 @@
     <input type="checkbox" class="checkbox" style="top: 820px; left: 192px;" title="4.全頁">
     <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;" title="5.半頁">
     <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;" title="6.年會特刊">
-
     <img id="signaturePreview" src="">
     <button id="signatureButton" onclick="openSignaturePage()">點擊簽名</button>
     <div id="btnGroup">
@@ -95,6 +94,7 @@
     window.addEventListener('storage', function(event) {
       if (event.key === 'signatureData') {
         document.getElementById('signaturePreview').src = event.newValue;
+        console.log("從 localStorage 接收到簽名資料");
       }
     });
 
@@ -102,6 +102,7 @@
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) {
         document.getElementById('signaturePreview').src = dataUrl;
+        console.log("頁面重新聚焦，重新載入簽名圖片");
       }
     });
 
@@ -111,6 +112,9 @@
         link.href = canvas.toDataURL();
         link.download = 'form_with_signature.png';
         link.click();
+        console.log("圖片已下載");
+      }).catch(err => {
+        console.error("下載圖片時出錯：", err);
       });
     }
 
@@ -121,6 +125,7 @@
       inputs.forEach(input => input.value = '');
       const checkboxes = document.querySelectorAll('.checkbox');
       checkboxes.forEach(checkbox => checkbox.checked = false);
+      console.log("清除所有輸入內容");
     }
 
     function previewFormImage() {
@@ -136,12 +141,16 @@
         ctx.drawImage(canvas, 0, 0);
         latestCanvas = canvas;
         document.getElementById("previewCanvasWrapper").style.display = "block";
+        console.log("預覽圖已產生");
+      }).catch(err => {
+        console.error("產生預覽圖時出錯：", err);
       });
     }
 
     function confirmAndSendImage() {
       if (!latestCanvas) {
         alert("請先點擊預覽圖檔");
+        console.warn("無預覽圖可寄出");
         return;
       }
 
@@ -157,7 +166,9 @@
         image_data: base64Image
       };
 
-      fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
+      console.log("即將寄出資料：", payload);
+
+      fetch("https://script.google.com/macros/s/AKfycbxeVJG-2J4J6jfEFf60GSTVtK73Q_1kWjdogXpl6fcrVmh99HxYgvaGslA06thGPWJV/exec", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -167,6 +178,7 @@
       .then(res => res.json())
       .then(data => {
         document.getElementById("loadingSpinner").style.display = "none";
+        console.log("寄送回應：", data);
         if (data.status === "success") {
           alert("✅ 表單已成功寄出！");
         } else {
