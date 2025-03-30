@@ -12,8 +12,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #fff;
       flex-direction: column;
+      background-color: #fff;
     }
     #signatureCanvas {
       border: 2px solid #000;
@@ -23,25 +23,37 @@
     }
     #finishBtn {
       margin-top: 20px;
-      padding: 10px 20px;
+      width: 150px; /* 按鈕寬度可在此調整 */
+      height: 50px; /* 按鈕高度可在此調整 */
       font-size: 18px;
-      resize: both;
-      overflow: auto;
       background-color: #f0f0f0;
       border: 1px solid #ccc;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      user-select: none;
+    }
+    #message {
+      position: absolute;
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
+      pointer-events: none;
+      user-select: none;
     }
   </style>
 </head>
 <body>
   <canvas id="signatureCanvas"></canvas>
   <div id="finishBtn">完成</div>
+  <div id="message" style="display:none;"></div>
 
   <script>
     const canvas = document.getElementById('signatureCanvas');
     const ctx = canvas.getContext('2d');
+    const finishBtn = document.getElementById('finishBtn');
+    const message = document.getElementById('message');
     let drawing = false;
 
     function resizeCanvas() {
@@ -87,18 +99,70 @@
     });
     canvas.addEventListener('touchend', () => drawing = false);
 
-    // 完成按鈕功能
-    document.getElementById('finishBtn').addEventListener('click', finishSignature);
-    document.getElementById('finishBtn').addEventListener('touchend', (e) => {
+    // 點擊完成按鈕功能
+    finishBtn.addEventListener('click', finishSignature);
+    finishBtn.addEventListener('touchend', (e) => {
       e.preventDefault();
       finishSignature();
     });
 
     function finishSignature() {
+      finishBtn.style.display = 'none';
+
       const dataUrl = canvas.toDataURL('image/png');
       localStorage.setItem('signatureData', dataUrl);
       window.opener.postMessage({ type: 'signature', dataUrl: dataUrl }, '*');
-      window.close();
+
+      showCountdownMessage(10);
+    }
+
+    // 顯示倒數訊息
+    function showCountdownMessage(seconds) {
+      message.style.display = 'block';
+      message.style.color = 'red';
+      updateMessagePosition();
+      let countdown = seconds;
+
+      const interval = setInterval(() => {
+        message.textContent = `系統為您處理中，請稍後 (${countdown}) 秒⋯`;
+        countdown--;
+
+        if (countdown < 0) {
+          clearInterval(interval);
+          message.textContent = '請點擊返回上一頁按鈕';
+          message.style.color = 'green';
+          createBackButton();
+        }
+      }, 1000);
+    }
+
+    // 調整訊息位置至簽名區中央
+    function updateMessagePosition() {
+      const rect = canvas.getBoundingClientRect();
+      message.style.top = `${rect.top + rect.height / 2 - 20}px`;
+      message.style.left = `${rect.left + rect.width / 2 - 100}px`;
+    }
+
+    window.addEventListener('resize', updateMessagePosition);
+
+    // 新增返回上一頁按鈕
+    function createBackButton() {
+      const backBtn = document.createElement('div');
+      backBtn.textContent = '返回上一頁';
+      backBtn.style.cssText = `
+        margin-top: 20px;
+        width: 150px;
+        height: 50px;
+        font-size: 18px;
+        background-color: #4CAF50;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      `;
+      backBtn.onclick = () => window.close();
+      document.body.appendChild(backBtn);
     }
   </script>
 </body>
