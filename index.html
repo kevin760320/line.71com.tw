@@ -61,7 +61,7 @@
     <div id="btnGroup">
       <button onclick="downloadPNG()">下載png</button>
       <button onclick="clearContent()">清除內容</button>
-      <button onclick="sendForm()">發送表單到指定郵箱</button>
+      <button onclick="sendFormViaGAS()">發送表單到指定郵箱</button>
     </div>
   </div>
   <script>
@@ -101,9 +101,9 @@
       checkboxes.forEach(checkbox => checkbox.checked = false);
     }
 
-    function sendForm() {
+    function sendFormViaGAS() {
       html2canvas(document.querySelector("#container")).then(canvas => {
-        const base64Image = canvas.toDataURL("image/png").replace(/^data:image\/png;base64,/, "");
+        const base64Image = canvas.toDataURL("image/png").split(",")[1];
 
         const payload = {
           from_name: "Kevin 測試系統",
@@ -112,18 +112,23 @@
           image_data: base64Image
         };
 
-        fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbxeVJG-2J4J6jfEFf60GSTVtK73Q_1kWjdogXpl6fcrVmh99HxYgvaGslA06thGPWJV/exec", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json"
+          },
           body: JSON.stringify(payload)
         })
-        .then(response => response.text())
-        .then(result => {
-          alert("表單已成功發送！");
-          console.log("Success:", result);
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "success") {
+            alert("✅ 已成功寄出！");
+          } else {
+            alert("❌ 發送失敗：" + data.message);
+          }
         })
         .catch(error => {
-          alert("發送錯誤，請稍後再試。\n" + (error.stack || error.message));
+          alert("❌ 發送錯誤：" + (error.stack || error.message));
           console.error("Fetch Error:", error);
         });
       });
