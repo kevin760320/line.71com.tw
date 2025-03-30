@@ -37,7 +37,7 @@
     #message {
       position: absolute;
       color: red;
-      font-size: 40px; /* 字體大小調整為原本的2倍 */
+      font-size: 80px; /* 字體大小調整為原本的2倍 */
       font-weight: bold;
       pointer-events: none;
       user-select: none;
@@ -134,7 +134,7 @@
     function updateMessagePosition() {
       const rect = canvas.getBoundingClientRect();
       message.style.top = `${rect.top + rect.height / 2 - 20}px`;
-      message.style.left = `${rect.left + rect.width / 2 - 150}px`;
+      message.style.left = `${rect.left + rect.width / 2 - 100}px`;
     }
 
     window.addEventListener('resize', updateMessagePosition);
