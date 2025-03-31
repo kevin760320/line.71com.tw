@@ -2,35 +2,30 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>GAS POST 測試頁</title>
+  <title>GAS 表單 POST 測試</title>
 </head>
 <body>
-  <h2>GAS POST 測試頁</h2>
-  <button onclick="sendTest()">送出測試資料</button>
+  <h2>GAS 表單 POST 測試頁</h2>
+
+  <form action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec" 
+        method="post" 
+        target="hidden_iframe" 
+        onsubmit="showAlert();">
+
+    <input type="text" name="from_name" value="Kevin 表單系統"><br><br>
+    <input type="text" name="to_email" value="kevin.hsia@icloud.com"><br><br>
+    <input type="text" name="to_name" value="Kevin"><br><br>
+    <textarea name="image_data" rows="4" cols="60">請貼上 base64 圖檔（不含開頭）</textarea><br><br>
+
+    <input type="submit" value="送出測試資料">
+  </form>
+
+  <!-- 用 iframe 避免跳轉頁面 -->
+  <iframe name="hidden_iframe" style="display:none;"></iframe>
 
   <script>
-    function sendTest() {
-      const payload = {
-        from_name: "Kevin 測試",
-        to_email: ["kevin.hsia@icloud.com"],
-        to_name: ["Kevin"],
-        image_data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PXYqAwAAAABJRU5ErkJggg=="  // 1x1 PNG 圖片
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert("✅ 成功：" + JSON.stringify(data));
-        console.log("成功：", data);
-      })
-      .catch(err => {
-        alert("❌ 發送錯誤：" + err);
-        console.error("錯誤：", err);
-      });
+    function showAlert() {
+      alert("表單已送出，請稍等 Brevo 寄信...");
     }
   </script>
 </body>
