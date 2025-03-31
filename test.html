@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>GAS 測試發送</title>
+</head>
+<body>
+  <h2>GAS POST 測試頁</h2>
+  <button onclick="testSendToGAS()">送出測試資料</button>
+
+  <script>
+    function testSendToGAS() {
+      const testBase64 = "iVBORw0KGgoAAAANSUhEUgAAAAUA" + 
+                         "AAAFCAYAAACNbyblAAAAHElEQVQI12P4" +
+                         "//8/w38GIAXDIBKE0DHxgljNBAAO" +
+                         "9TXL0Y4OHwAAAABJRU5ErkJggg=="; // 測試圖
+
+      const payload = {
+        from_name: "測試系統",
+        to_email: ["kevin.hsia@icloud.com"],
+        to_name: ["Kevin"],
+        image_data: testBase64
+      };
+
+      fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === "success") {
+          alert("✅ 成功傳送至 GAS！");
+        } else {
+          alert("❌ 失敗：" + data.message);
+        }
+      })
+      .catch(err => {
+        alert("❌ 發送錯誤：" + err);
+        console.error(err);
+      });
+    }
+  </script>
+</body>
+</html>
