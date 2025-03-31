@@ -5,27 +5,34 @@
   <title>GAS 表單 POST 測試</title>
 </head>
 <body>
-  <h2>GAS 表單 POST 測試頁</h2>
+  <h2>使用 form 傳送 base64 圖片給 Google Apps Script</h2>
 
-  <form action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec" 
-        method="post" 
-        target="hidden_iframe" 
-        onsubmit="showAlert();">
-
-    <input type="text" name="from_name" value="Kevin 表單系統"><br><br>
-    <input type="text" name="to_email" value="kevin.hsia@icloud.com"><br><br>
-    <input type="text" name="to_name" value="Kevin"><br><br>
-    <textarea name="image_data" rows="4" cols="60">請貼上 base64 圖檔（不含開頭）</textarea><br><br>
-
-    <input type="submit" value="送出測試資料">
+  <form id="form" action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec" method="POST" target="hidden_iframe">
+    <input type="hidden" name="from_name" value="Kevin 測試系統">
+    <input type="hidden" name="to_email" value="kevin.hsia@icloud.com">
+    <input type="hidden" name="to_name" value="Kevin">
+    <input type="hidden" name="image_data" id="image_data">
+    <button type="button" onclick="generateAndSubmit()">送出測試圖片</button>
   </form>
 
-  <!-- 用 iframe 避免跳轉頁面 -->
   <iframe name="hidden_iframe" style="display:none;"></iframe>
+  <canvas id="canvas" width="300" height="100" style="border:1px solid #000;"></canvas>
 
   <script>
-    function showAlert() {
-      alert("表單已送出，請稍等 Brevo 寄信...");
+    // 在 canvas 上畫個簡單圖示作為 base64 測試圖
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#f00";
+    ctx.fillRect(10, 10, 280, 80);
+    ctx.fillStyle = "#fff";
+    ctx.font = "20px Arial";
+    ctx.fillText("這是測試圖片", 60, 60);
+
+    function generateAndSubmit() {
+      const base64 = canvas.toDataURL("image/png").split(",")[1]; // 去掉前綴
+      document.getElementById("image_data").value = base64;
+      document.getElementById("form").submit();
+      alert("已送出圖片給 GAS，請查看信箱或 GAS 記錄。");
     }
   </script>
 </body>
