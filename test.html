@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>GAS POST 測試</title>
+  <title>GAS POST 測試頁</title>
 </head>
 <body>
   <h2>GAS POST 測試頁</h2>
@@ -10,19 +10,27 @@
 
   <script>
     function sendTest() {
+      const payload = {
+        from_name: "Kevin 測試",
+        to_email: ["kevin.hsia@icloud.com"],
+        to_name: ["Kevin"],
+        image_data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PXYqAwAAAABJRU5ErkJggg=="  // 1x1 PNG 圖片
+      };
+
       fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from_name: "Test",
-          to_email: ["test@example.com"],
-          to_name: ["測試"],
-          image_data: "dGVzdA=="  // 測試用 base64，內容是 "test"
-        })
+        body: JSON.stringify(payload)
       })
       .then(res => res.json())
-      .then(data => alert("回傳：" + JSON.stringify(data)))
-      .catch(err => alert("發送錯誤：" + err));
+      .then(data => {
+        alert("✅ 成功：" + JSON.stringify(data));
+        console.log("成功：", data);
+      })
+      .catch(err => {
+        alert("❌ 發送錯誤：" + err);
+        console.error("錯誤：", err);
+      });
     }
   </script>
 </body>
