@@ -57,22 +57,29 @@
 </head>
 <body>
   <h2>委刊表填寫與簽名</h2>
+  <form id="uploadForm" method="POST" action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec" target="_blank">
+    <input type="hidden" name="from_name" value="Kevin 測試系統">
+    <input type="hidden" name="to_email" value="kevin.hsia@icloud.com">
+    <input type="hidden" name="to_name" value="Kevin">
+    <input type="hidden" name="image_data" id="image_data">
+  </form>
+
   <div id="container">
     <img id="formImage" src="https://kevin760320.github.io/line.71com.tw/from-background.png" alt="表單背景">
 
-    <input class="inputField" style="top: 592px; left: 190px; width: 120px; border-bottom: none;" placeholder="委刊人">
-    <input class="inputField" style="top: 620px; left: 190px; width: 120px; border-bottom: none;" placeholder="職稱">
-    <input class="inputField" style="top: 620px; left: 435px; width: 120px; border-bottom: none;" placeholder="獅友姓名">
-    <input class="inputField" style="top: 650px; left: 190px; width: 250px; border-bottom: none;" placeholder="公司名稱">
-    <input class="inputField" style="top: 676px; left: 190px; width: 400px; border-bottom: none;" placeholder="公司地址">
-    <input class="inputField" style="top: 648px; left: 485px; width: 120px; border-bottom: none;" placeholder="電話">
+    <input class="inputField" style="top: 592px; left: 190px; width: 120px;" placeholder="委刊人">
+    <input class="inputField" style="top: 620px; left: 190px; width: 120px;" placeholder="職稱">
+    <input class="inputField" style="top: 620px; left: 435px; width: 120px;" placeholder="獅友姓名">
+    <input class="inputField" style="top: 650px; left: 190px; width: 250px;" placeholder="公司名稱">
+    <input class="inputField" style="top: 676px; left: 190px; width: 400px;" placeholder="公司地址">
+    <input class="inputField" style="top: 648px; left: 485px; width: 120px;" placeholder="電話">
 
-    <input type="checkbox" class="checkbox" style="top: 722px; left: 196px;" title="1.封底">
-    <input type="checkbox" class="checkbox" style="top: 764px; left: 192px;" title="2.封面裡或封底裡">
-    <input type="checkbox" class="checkbox" style="top: 791px; left: 192px;" title="3.第1頁及最後1頁">
-    <input type="checkbox" class="checkbox" style="top: 820px; left: 192px;" title="4.全頁">
-    <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;" title="5.半頁">
-    <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;" title="6.年會特刊">
+    <input type="checkbox" class="checkbox" style="top: 722px; left: 196px;">
+    <input type="checkbox" class="checkbox" style="top: 764px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 791px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 820px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;">
     <img id="signaturePreview" src="">
 
     <div id="signatureButton" class="btnResizable" onclick="openSignaturePage()">點擊簽名</div>
@@ -83,7 +90,7 @@
   <img id="previewImage" />
   <div id="loading">郵件寄送中，請稍後...</div>
   <button onclick="generatePreview()">預覽圖</button>
-  <button onclick="sendImage()">確定寄出</button>
+  <button onclick="submitFormImage()">確定寄出</button>
 
   <script>
     let base64Image = "";
@@ -93,28 +100,18 @@
       window.open('signature.html', '_blank');
     }
 
-    window.addEventListener('storage', function(event) {
-      if (event.key === 'signatureData') {
-        document.getElementById('signaturePreview').src = event.newValue;
-      }
-    });
-
     window.addEventListener('focus', function() {
       const dataUrl = localStorage.getItem('signatureData');
-      if (dataUrl) {
-        document.getElementById('signaturePreview').src = dataUrl;
-      }
+      if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
 
     function downloadPNG() {
       document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'hidden');
-
       html2canvas(document.querySelector("#container")).then(canvas => {
-        let link = document.createElement('a');
+        const link = document.createElement('a');
         link.href = canvas.toDataURL();
         link.download = 'form_with_signature.png';
         link.click();
-
         document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'visible');
       });
     }
@@ -122,58 +119,25 @@
     function clearContent() {
       document.getElementById('signaturePreview').src = '';
       localStorage.removeItem('signatureData');
-
-      const inputs = document.querySelectorAll('.inputField');
-      inputs.forEach(input => input.value = '');
-
-      const checkboxes = document.querySelectorAll('.checkbox');
-      checkboxes.forEach(checkbox => checkbox.checked = false);
+      document.querySelectorAll('.inputField').forEach(input => input.value = '');
+      document.querySelectorAll('.checkbox').forEach(checkbox => checkbox.checked = false);
     }
 
     function generatePreview() {
       html2canvas(document.querySelector("#container")).then(canvas => {
-        base64Image = canvas.toDataURL("image/png").split(",")[1]; // 去除 base64 前綴
-        const preview = document.getElementById("previewImage");
-        preview.src = "data:image/png;base64," + base64Image;
-        preview.style.display = "block";
+        base64Image = canvas.toDataURL("image/png").split(",")[1];
+        document.getElementById("previewImage").src = "data:image/png;base64," + base64Image;
+        document.getElementById("previewImage").style.display = "block";
         alert("預覽圖產生完成，請確認後再寄出。");
       });
     }
 
-    function sendImage() {
-      if (!base64Image) {
-        alert("請先產生預覽圖");
-        return;
-      }
-
+    function submitFormImage() {
+      if (!base64Image) return alert("請先產生預覽圖");
       document.getElementById("loading").style.display = "block";
-
-      const payload = {
-        from_name: "Kevin 測試系統",
-        to_email: ["kevin.hsia@icloud.com"],
-        to_name: ["Kevin"],
-        image_data: base64Image
-      };
-
-      fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("loading").style.display = "none";
-          if (data.status === "success") {
-            alert("✅ 表單已成功寄出！");
-          } else {
-            alert("❌ 寄送失敗：" + data.message);
-          }
-        })
-        .catch(error => {
-          document.getElementById("loading").style.display = "none";
-          alert("❌ 發送錯誤：" + error);
-          console.error(error);
-        });
+      document.getElementById("image_data").value = base64Image;
+      document.getElementById("uploadForm").submit();
+      setTimeout(() => document.getElementById("loading").style.display = "none", 2000);
     }
   </script>
 </body>
