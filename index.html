@@ -58,14 +58,17 @@
 <body>
   <h2>委刊表填寫與簽名</h2>
 
-  <!-- 表單區塊：會透過 submit 傳送圖片給 GAS -->
-  <form id="uploadForm" method="POST" action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec" target="_blank">
+  <!-- 用來傳送資料給 GAS 的表單 -->
+  <form id="uploadForm" method="POST"
+    action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec"
+    target="_blank">
     <input type="hidden" name="from_name" value="Kevin 測試系統">
     <input type="hidden" name="to_email" value="kevin.hsia@icloud.com">
     <input type="hidden" name="to_name" value="Kevin">
     <input type="hidden" name="image_data" id="image_data">
   </form>
 
+  <!-- 圖片與欄位容器 -->
   <div id="container">
     <img id="formImage" src="https://kevin760320.github.io/line.71com.tw/from-background.png" alt="表單背景">
 
@@ -102,7 +105,7 @@
       window.open('signature.html', '_blank');
     }
 
-    window.addEventListener('focus', function() {
+    window.addEventListener('focus', function () {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
@@ -127,7 +130,7 @@
 
     function generatePreview() {
       html2canvas(document.querySelector("#container")).then(canvas => {
-        base64Image = canvas.toDataURL("image/png").split(",")[1];
+        base64Image = canvas.toDataURL("image/png").split(",")[1]; // 去除 base64 前綴
         document.getElementById("previewImage").src = "data:image/png;base64," + base64Image;
         document.getElementById("previewImage").style.display = "block";
         alert("預覽圖產生完成，請確認後再寄出。");
@@ -139,7 +142,9 @@
       document.getElementById("loading").style.display = "block";
       document.getElementById("image_data").value = base64Image;
       document.getElementById("uploadForm").submit();
-      setTimeout(() => document.getElementById("loading").style.display = "none", 2000);
+      setTimeout(() => {
+        document.getElementById("loading").style.display = "none";
+      }, 2000);
     }
   </script>
 </body>
