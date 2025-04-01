@@ -1,58 +1,135 @@
-function doPost(e) {
-  try {
-    const data =e.parameter;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>委刊表填寫與簽名</title>
+  <style>
+    body { text-align: center; font-family: Arial, sans-serif; }
+    #container { position: relative; display: inline-block; }
+    #formImage { width: 800px; }
+    .inputField {
+      position: absolute;
+      font-size: 16px;
+      border: none;
+      background: transparent;
+      outline: none;
+    }
+    .checkbox {
+      position: absolute;
+      transform: scale(1.5);
+    }
+    #signaturePreview {
+      position: absolute;
+      top: 880px;
+      left: 230px;
+      width: 200px;
+      height: 80px;
+      pointer-events: none;
+    }
+    .btnResizable {
+      position: absolute;
+      resize: both;
+      overflow: auto;
+      padding: 10px;
+      background-color: #f0f0f0;
+      border: 1px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    #signatureButton { top: 890px; left: 470px; color: #ff0000; }
+    #downloadButton { top: 1120px; left: 250px; }
+    #clearButton { top: 1120px; left: 350px; }
+    #loading {
+      margin-top: 10px;
+      color: red;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <h2>委刊表填寫與簽名</h2>
 
-    const brevoApiKey = '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';  // ← 這裡請換成你的金鑰
+  <form id="uploadForm" method="POST"
+    action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec"
+    target="_blank">
+    <input type="hidden" name="from_name" value="Kevin 測試系統">
+    <input type="hidden" name="to_email" value="kevin.hsia@icloud.com">
+    <input type="hidden" name="to_name" value="Kevin">
+    <input type="hidden" name="image_data" id="image_data">
+  </form>
 
-    // 確保 base64 沒有前綴
-    if (!data.image_data || data.image_data.startsWith("data:image")) {
-      throw new Error("圖片格式錯誤，請確認 base64 無前綴");
+  <div id="container">
+    <img id="formImage" src="https://kevin760320.github.io/line.71com.tw/from-background.png" alt="表單背景">
+    <input class="inputField" style="top: 592px; left: 190px; width: 120px;" placeholder="委刊人">
+    <input class="inputField" style="top: 620px; left: 190px; width: 120px;" placeholder="職稱">
+    <input class="inputField" style="top: 620px; left: 435px; width: 120px;" placeholder="獅友姓名">
+    <input class="inputField" style="top: 650px; left: 190px; width: 250px;" placeholder="公司名稱">
+    <input class="inputField" style="top: 676px; left: 190px; width: 400px;" placeholder="公司地址">
+    <input class="inputField" style="top: 648px; left: 485px; width: 120px;" placeholder="電話">
+    <input type="checkbox" class="checkbox" style="top: 722px; left: 196px;">
+    <input type="checkbox" class="checkbox" style="top: 764px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 791px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 820px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;">
+    <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;">
+    <img id="signaturePreview" src="">
+    <div id="signatureButton" class="btnResizable" onclick="openSignaturePage()">點擊簽名</div>
+    <div id="downloadButton" class="btnResizable" onclick="downloadPNG()">下載png</div>
+    <div id="clearButton" class="btnResizable" onclick="clearContent()">清除內容</div>
+  </div>
+
+  <div id="loading">郵件寄送中，請稍後...</div>
+  <button onclick="submitFormImage()">確定寄出</button>
+
+  <script>
+    let base64Image = "";
+
+    function openSignaturePage() {
+      localStorage.removeItem('signatureData');
+      window.open('signature.html', '_blank');
     }
 
-    const toList = [{
-      email: data.to_email,
-      name: data.to_name
-    }];
+    window.addEventListener('focus', function () {
+      const dataUrl = localStorage.getItem('signatureData');
+      if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
+    });
 
-    const payload = {
-      sender: {
-        name: data.from_name || "表單系統",
-        email: "xiaxianglong8@gmail.com"  // ← 這是你 Brevo 驗證過的寄件人
-      },
-      to: toList,
-      subject: "來自網站的表單資料",
-      htmlContent: `<p>以下為使用者提交的表單截圖：</p><img src="cid:formImage" />`,
-      attachment: [{
-        content: data.image_data,  // 純 base64 圖片資料
-        name: "form.png",
-        type: "image/png",
-        contentId: "formImage"
-      }]
-    };
+    function downloadPNG() {
+      document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'hidden');
+      html2canvas(document.querySelector("#container")).then(canvas => {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL();
+        link.download = 'form_with_signature.png';
+        link.click();
+        document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'visible');
+      });
+    }
 
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      headers: {
-        "api-key": brevoApiKey,
-        "accept": "application/json"
-      },
-      payload: JSON.stringify(payload)
-    };
+    function clearContent() {
+      document.getElementById('signaturePreview').src = '';
+      localStorage.removeItem('signatureData');
+      document.querySelectorAll('.inputField').forEach(input => input.value = '');
+      document.querySelectorAll('.checkbox').forEach(checkbox => checkbox.checked = false);
+    }
 
-    const response = UrlFetchApp.fetch("https://api.brevo.com/v3/smtp/email", options);
-    const responseText = response.getContentText();
+    function submitFormImage() {
+      document.getElementById("loading").style.display = "block";
+      document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'hidden');
 
-    Logger.log("Brevo 回應：" + responseText);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "success", response: responseText }))
-      .setMimeType(ContentService.MimeType.JSON);
-
-  } catch (err) {
-    Logger.log("發生錯誤：" + err.message);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+      html2canvas(document.querySelector("#container")).then(canvas => {
+        const base64 = canvas.toDataURL("image/png").split(",")[1];
+        document.getElementById("image_data").value = base64;
+        document.getElementById("uploadForm").submit();
+        setTimeout(() => {
+          document.getElementById("loading").style.display = "none";
+          document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'visible');
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
