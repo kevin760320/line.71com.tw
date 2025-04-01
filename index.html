@@ -41,11 +41,6 @@
     #signatureButton { top: 890px; left: 470px; color: #ff0000; }
     #downloadButton { top: 1120px; left: 250px; }
     #clearButton { top: 1120px; left: 350px; }
-    #previewImage {
-      margin-top: 20px;
-      max-width: 100%;
-      display: none;
-    }
     #loading {
       margin-top: 10px;
       color: red;
@@ -58,7 +53,6 @@
 <body>
   <h2>委刊表填寫與簽名</h2>
 
-  <!-- 用來傳送資料給 GAS 的表單 -->
   <form id="uploadForm" method="POST"
     action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec"
     target="_blank">
@@ -68,17 +62,14 @@
     <input type="hidden" name="image_data" id="image_data">
   </form>
 
-  <!-- 圖片與欄位容器 -->
   <div id="container">
     <img id="formImage" src="https://kevin760320.github.io/line.71com.tw/from-background.png" alt="表單背景">
-
     <input class="inputField" style="top: 592px; left: 190px; width: 120px;" placeholder="委刊人">
     <input class="inputField" style="top: 620px; left: 190px; width: 120px;" placeholder="職稱">
     <input class="inputField" style="top: 620px; left: 435px; width: 120px;" placeholder="獅友姓名">
     <input class="inputField" style="top: 650px; left: 190px; width: 250px;" placeholder="公司名稱">
     <input class="inputField" style="top: 676px; left: 190px; width: 400px;" placeholder="公司地址">
     <input class="inputField" style="top: 648px; left: 485px; width: 120px;" placeholder="電話">
-
     <input type="checkbox" class="checkbox" style="top: 722px; left: 196px;">
     <input type="checkbox" class="checkbox" style="top: 764px; left: 192px;">
     <input type="checkbox" class="checkbox" style="top: 791px; left: 192px;">
@@ -86,15 +77,12 @@
     <input type="checkbox" class="checkbox" style="top: 848px; left: 192px;">
     <input type="checkbox" class="checkbox" style="top: 876px; left: 192px;">
     <img id="signaturePreview" src="">
-
     <div id="signatureButton" class="btnResizable" onclick="openSignaturePage()">點擊簽名</div>
     <div id="downloadButton" class="btnResizable" onclick="downloadPNG()">下載png</div>
     <div id="clearButton" class="btnResizable" onclick="clearContent()">清除內容</div>
   </div>
 
-  <img id="previewImage" />
   <div id="loading">郵件寄送中，請稍後...</div>
-  <button onclick="generatePreview()">預覽圖</button>
   <button onclick="submitFormImage()">確定寄出</button>
 
   <script>
@@ -128,23 +116,19 @@
       document.querySelectorAll('.checkbox').forEach(checkbox => checkbox.checked = false);
     }
 
-    function generatePreview() {
-      html2canvas(document.querySelector("#container")).then(canvas => {
-        base64Image = canvas.toDataURL("image/png").split(",")[1]; // 去除 base64 前綴
-        document.getElementById("previewImage").src = "data:image/png;base64," + base64Image;
-        document.getElementById("previewImage").style.display = "block";
-        alert("預覽圖產生完成，請確認後再寄出。");
-      });
-    }
-
     function submitFormImage() {
-      if (!base64Image) return alert("請先產生預覽圖");
       document.getElementById("loading").style.display = "block";
-      document.getElementById("image_data").value = base64Image;
-      document.getElementById("uploadForm").submit();
-      setTimeout(() => {
-        document.getElementById("loading").style.display = "none";
-      }, 2000);
+      document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'hidden');
+
+      html2canvas(document.querySelector("#container")).then(canvas => {
+        const base64 = canvas.toDataURL("image/png").split(",")[1];
+        document.getElementById("image_data").value = base64;
+        document.getElementById("uploadForm").submit();
+        setTimeout(() => {
+          document.getElementById("loading").style.display = "none";
+          document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'visible');
+        }, 2000);
+      });
     }
   </script>
 </body>
