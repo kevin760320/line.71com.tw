@@ -51,7 +51,7 @@
   <h2>委刊表填寫與簽名</h2>
   <div id="container">
     <div class="form-section">
-      <h3>獅友目錄廣告單價表</h3>
+      <h3>鐵友目錄廣告單價表</h3>
       <p>一、封底每期 12,000 元</p>
       <p>二、封面裡或封底裡 8,000 元</p>
       <p>三、第一頁及最後一頁 8,000 元</p>
@@ -101,7 +101,7 @@
       <p>Line ID：a0923811888</p>
       <p>聯絡人：藍玉彩</p>
       <p>電話：04-22635500</p>
-      <p>傳真：04-22622832 300 C2區 總監許吉本 敬邀</p>
+      <p>傳真：04-22622832 300C 2 總監許吉本 敬邀 </p>
     </div>
 
     <div id="signatureButton" class="btnResizable" onclick="openSignaturePage()">點擊簽名</div>
@@ -159,6 +159,13 @@
       button.innerText = "寄送中...";
 
       try {
+        // 檢查必填欄位
+        const publisher = document.getElementById("publisher").value;
+        if (!publisher) throw new Error("請填寫委刊人姓名");
+
+        const signatureData = localStorage.getItem('signatureData');
+        if (!signatureData) throw new Error("請先簽名");
+
         const container = document.getElementById("container");
         document.querySelectorAll('.btnResizable').forEach(el => el.style.visibility = 'hidden');
         const canvas = await html2canvas(container);
@@ -166,7 +173,7 @@
 
         const base64Image = canvas.toDataURL("image/png").split(",")[1];
         const formData = {
-          publisher: document.getElementById("publisher").value,
+          publisher: publisher,
           title: document.getElementById("title").value,
           lionName: document.getElementById("lionName").value,
           companyName: document.getElementById("companyName").value,
@@ -188,10 +195,16 @@
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData)
+          body: JSON.stringify(formData),
+          mode: 'cors', // 明確指定 CORS 模式
+          credentials: 'omit' // 不發送憑證
         });
 
-        if (!response.ok) throw new Error('網絡錯誤');
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`網絡錯誤: ${response.status} - ${errorText}`);
+        }
+
         const result = await response.json();
         if (result.status === 'success') {
           alert("表單已成功寄出！");
@@ -200,7 +213,7 @@
         }
       } catch (error) {
         console.error("寄送失敗:", error);
-        alert("寄送失敗，請稍後再試！");
+        alert(`寄送失敗：${error.message}`);
       } finally {
         button.disabled = false;
         button.innerText = "寄送表單";
