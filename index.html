@@ -16,23 +16,41 @@
     <button type="button" id="sendButton" onclick="captureAndSubmit()">產生簽名圖並寄出</button>
   </form>
 
-  <!-- 簽名預覽區域 -->
+  <!-- 預覽區域 -->
   <div id="signatureArea" style="border: 1px solid black; padding: 10px; width: 300px;">
     <p>這裡是簽名預覽區域</p>
     <img id="signaturePreview" src="" style="max-width: 100%;">
   </div>
 
-  <!-- 載入 html2canvas -->
+  <!-- 載入 html2canvas 函式庫 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
+    // 頁面載入完成後，檢查是否誤用 GAS 預覽網址
+    document.addEventListener("DOMContentLoaded", function () {
+      if (location.hostname.includes("script.googleusercontent.com")) {
+        alert("目前是預覽模式（不是正式寄送）！請回到正式頁面使用！");
+        // location.href = "https://kevin760320.github.io/line.71com.tw/index.html";
+      }
+    });
+
     // 自 localStorage 載入簽名圖片
     window.addEventListener('focus', () => {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
 
-    // 封裝產生簽名圖並送出
+    // 接收簽名完成的通知
+    window.addEventListener("message", function(event) {
+      if (event.data?.type === "signatureSaved") {
+        const dataUrl = localStorage.getItem("signatureData");
+        if (dataUrl) {
+          document.getElementById("signaturePreview").src = dataUrl;
+        }
+      }
+    });
+
+    // 擷取簽名圖並送出表單
     function captureAndSubmit() {
       const button = document.getElementById("sendButton");
       button.disabled = true;
@@ -44,13 +62,6 @@
         document.getElementById("image_data").value = base64Image;
         document.getElementById("sendForm").submit();
       });
-    }
-
-    // 檢查是否是 GAS 預覽模式
-    document.addEventListener("DOMContentLoaded", function () {
-    if (location.hostname.includes("script.googleusercontent.com")) {
-      alert("目前是預覽模式（不是正式寄送）！請回到正式頁面使用！");
-      // location.href = "https://kevin760320.github.io/line.71com.tw/index.html";
     }
   </script>
 </body>
