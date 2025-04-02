@@ -1,54 +1,55 @@
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>簽名表單寄送</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+  <h3>預覽簽名表單區塊</h3>
+  <div id="form" style="padding:20px; border:1px solid #000; width:300px;">
+    <p>這是測試表單區塊</p>
+    <img id="signature" src="" alt="簽名" style="width:200px;" />
+  </div>
 
-    const brevoApiKey = '你的 Brevo API 金鑰'; // ← 替換為你自己的金鑰
+  <button onclick="captureAndSend()">送出</button>
+  <div id="loading" style="display:none; color:red;">寄送中...</div>
 
-    // 驗證 base64
-    if (!data.image_data || data.image_data.startsWith("data:image")) {
-      throw new Error("圖片格式錯誤，請確認 base64 沒有包含前綴");
+  <script>
+    // demo：從 localStorage 撈簽名圖（若你有 signature.html）
+    window.addEventListener("focus", () => {
+      const dataUrl = localStorage.getItem("signatureData");
+      if (dataUrl) document.getElementById("signature").src = dataUrl;
+    });
+
+    function captureAndSend() {
+      document.getElementById("loading").style.display = "block";
+
+      html2canvas(document.getElementById("form")).then(canvas => {
+        const base64 = canvas.toDataURL("image/png").split(",")[1];
+
+        fetch("https://script.google.com/macros/s/YOUR_DEPLOYED_GAS_URL/exec", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            from_name: "表單測試",
+            from_email: "你的寄件人 email",
+            to_name: "接收者",
+            to_email: "recipient@example.com",
+            image_data: base64
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          alert("成功：" + data.status);
+          console.log(data);
+        })
+        .catch(err => alert("錯誤：" + err.message))
+        .finally(() => {
+          document.getElementById("loading").style.display = "none";
+        });
+      });
     }
-
-    const payload = {
-      sender: {
-        name: data.from_name || "網站表單",
-        email: data.from_email || "你 Brevo 驗證過的 email"
-      },
-      to: [{
-        name: data.to_name || "",
-        email: data.to_email
-      }],
-      subject: "簽名表單資料",
-      htmlContent: `<p>以下為簽名表單截圖：</p><img src="cid:formImage" />`,
-      attachment: [{
-        content: data.image_data,
-        name: "form.png",
-        type: "image/png",
-        contentId: "formImage"
-      }]
-    };
-
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      headers: {
-        "api-key": brevoApiKey,
-        "accept": "application/json"
-      },
-      payload: JSON.stringify(payload)
-    };
-
-    const response = UrlFetchApp.fetch("https://api.brevo.com/v3/smtp/email", options);
-    const responseText = response.getContentText();
-    Logger.log("Brevo 回應：" + responseText);
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "success", response: responseText }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (err) {
-    Logger.log("錯誤：" + err.message);
-    return ContentService
-      .createTextOutput(JSON.stringify({ status: "error", message: err.message }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}
+  </script>
+</body>
+</html>
