@@ -47,6 +47,7 @@
     }
 
     // 檢查是否是 GAS 預覽模式
+    document.addEventListener("DOMContentLoaded", function () {
     if (location.hostname.includes("script.googleusercontent.com")) {
       alert("目前是預覽模式（不是正式寄送）！請回到正式頁面使用！");
       // location.href = "https://kevin760320.github.io/line.71com.tw/index.html";
