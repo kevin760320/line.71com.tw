@@ -16,7 +16,7 @@
     <button type="button" id="sendButton" onclick="captureAndSubmit()">產生簽名圖並寄出</button>
   </form>
 
-  <!-- 預覽區域 -->
+  <!-- 簽名預覽區域 -->
   <div id="signatureArea" style="border: 1px solid black; padding: 10px; width: 300px;">
     <p>這裡是簽名預覽區域</p>
     <img id="signaturePreview" src="" style="max-width: 100%;">
@@ -26,23 +26,13 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    // 自 localStorage 載入簽名圖片（當頁面重新 focus 時）
+    // 自 localStorage 載入簽名圖片
     window.addEventListener('focus', () => {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
 
-    // 接收從 signature.html 傳回的訊息，更新預覽圖片
-    window.addEventListener("message", function(event) {
-      if (event.data?.type === "signatureSaved") {
-        const dataUrl = localStorage.getItem("signatureData");
-        if (dataUrl) {
-          document.getElementById("signaturePreview").src = dataUrl;
-        }
-      }
-    });
-
-    // 產生截圖並提交表單
+    // 封裝產生簽名圖並送出
     function captureAndSubmit() {
       const button = document.getElementById("sendButton");
       button.disabled = true;
@@ -52,8 +42,14 @@
       html2canvas(container).then(canvas => {
         const base64Image = canvas.toDataURL("image/png").split(",")[1];
         document.getElementById("image_data").value = base64Image;
-        document.getElementById("sendForm").submit();  // 送出表單
+        document.getElementById("sendForm").submit();
       });
+    }
+
+    // 檢查是否是 GAS 預覽模式
+    if (location.hostname.includes("script.googleusercontent.com")) {
+      alert("目前是預覽模式（不是正式寄送）！請回到正式頁面使用！");
+      // location.href = "https://kevin760320.github.io/line.71com.tw/index.html";
     }
   </script>
 </body>
