@@ -2,13 +2,13 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <title>簡易寄信表單</title>
+  <title>寄送簽名圖片表單</title>
 </head>
 <body>
   <h2>寄送簽名圖片表單</h2>
 
   <!-- 表單 -->
-  <form id="sendForm" method="POST" action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec">
+  <form id="sendForm">
     <input type="hidden" name="from_name" value="Kevin 測試系統">
     <input type="hidden" name="to_email" value="kevin.hsia@icloud.com">
     <input type="hidden" name="to_name" value="Kevin">
@@ -22,25 +22,17 @@
     <img id="signaturePreview" src="" style="max-width: 100%;">
   </div>
 
-  <!-- 載入 html2canvas 函式庫 -->
+  <!-- 載入 html2canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    // 頁面載入完成後，檢查是否誤用 GAS 預覽網址
-    document.addEventListener("DOMContentLoaded", function () {
-      if (location.hostname.includes("script.googleusercontent.com")) {
-        alert("目前是預覽模式（不是正式寄送）！請回到正式頁面使用！");
-        // location.href = "https://kevin760320.github.io/line.71com.tw/index.html";
-      }
-    });
-
     // 自 localStorage 載入簽名圖片
     window.addEventListener('focus', () => {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
 
-    // 接收簽名完成的通知
+    // 供簽名頁用 postMessage 傳回資料時觸發（支援跨頁自動更新）
     window.addEventListener("message", function(event) {
       if (event.data?.type === "signatureSaved") {
         const dataUrl = localStorage.getItem("signatureData");
@@ -50,7 +42,7 @@
       }
     });
 
-    // 擷取簽名圖並送出表單
+    // 截圖並送出表單
     function captureAndSubmit() {
       const button = document.getElementById("sendButton");
       button.disabled = true;
@@ -59,8 +51,28 @@
       const container = document.getElementById("signatureArea");
       html2canvas(container).then(canvas => {
         const base64Image = canvas.toDataURL("image/png").split(",")[1];
-        document.getElementById("image_data").value = base64Image;
-        document.getElementById("sendForm").submit();
+        const formData = new FormData();
+        formData.append("from_name", "Kevin 測試系統");
+        formData.append("to_email", "kevin.hsia@icloud.com");
+        formData.append("to_name", "Kevin");
+        formData.append("image_data", base64Image);
+
+        fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
+          method: "POST",
+          body: formData
+        })
+        .then(response => response.text())
+        .then(result => {
+          alert("簽名圖片已成功寄出！");
+          button.disabled = false;
+          button.innerText = "產生簽名圖並寄出";
+        })
+        .catch(error => {
+          console.error("寄送失敗:", error);
+          alert("寄送失敗，請稍後再試！");
+          button.disabled = false;
+          button.innerText = "產生簽名圖並寄出";
+        });
       });
     }
   </script>
