@@ -29,10 +29,11 @@
     });
 
     function captureAndSubmit() {
-      html2canvas(document.querySelector("#signatureArea")).then(canvas => {
-        const base64 = canvas.toDataURL("image/png").split(",")[1];
-        document.getElementById("image_data").value = base64;
-        document.getElementById("sendForm").submit();
+      const container = document.getElementById("signatureArea");
+      html2canvas(container).then(canvas => {
+        const base64Image = canvas.toDataURL("image/png").split(",")[1];
+        document.getElementById("image_data").value = base64Image;
+        document.getElementById("sendForm").submit();  // <<< 這行是關鍵
       });
     }
   </script>
