@@ -28,7 +28,7 @@
       html2canvas(document.getElementById("form")).then(canvas => {
         const base64 = canvas.toDataURL("image/png").split(",")[1];
 
-        fetch("https://script.google.com/macros/s/YOUR_DEPLOYED_GAS_URL/exec", {
+        fetch("https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
