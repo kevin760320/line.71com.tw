@@ -26,12 +26,23 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    // 自 localStorage 載入簽名圖片
+    // 自 localStorage 載入簽名圖片（當頁面重新 focus 時）
     window.addEventListener('focus', () => {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
 
+    // 接收從 signature.html 傳回的訊息，更新預覽圖片
+    window.addEventListener("message", function(event) {
+      if (event.data?.type === "signatureSaved") {
+        const dataUrl = localStorage.getItem("signatureData");
+        if (dataUrl) {
+          document.getElementById("signaturePreview").src = dataUrl;
+        }
+      }
+    });
+
+    // 產生截圖並提交表單
     function captureAndSubmit() {
       const button = document.getElementById("sendButton");
       button.disabled = true;
