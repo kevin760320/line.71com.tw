@@ -7,33 +7,41 @@
 <body>
   <h2>寄送簽名圖片表單</h2>
 
+  <!-- 表單 -->
   <form id="sendForm" method="POST" action="https://script.google.com/macros/s/AKfycbxf5DiQUJ5EbZ7dsxK_SduJMHBql5yw9R5iK0FaHrhO_VrF_PMxzBk9KN_MmA8b7_67/exec">
     <input type="hidden" name="from_name" value="Kevin 測試系統">
     <input type="hidden" name="to_email" value="kevin.hsia@icloud.com">
     <input type="hidden" name="to_name" value="Kevin">
     <input type="hidden" name="image_data" id="image_data">
-    <button type="button" onclick="captureAndSubmit()">產生簽名圖並寄出</button>
+    <button type="button" id="sendButton" onclick="captureAndSubmit()">產生簽名圖並寄出</button>
   </form>
 
+  <!-- 預覽區域 -->
   <div id="signatureArea" style="border: 1px solid black; padding: 10px; width: 300px;">
     <p>這裡是簽名預覽區域</p>
     <img id="signaturePreview" src="" style="max-width: 100%;">
   </div>
 
+  <!-- 載入 html2canvas -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <script>
-    // 自 localStorage 載入簽名圖
+    // 自 localStorage 載入簽名圖片
     window.addEventListener('focus', () => {
       const dataUrl = localStorage.getItem('signatureData');
       if (dataUrl) document.getElementById('signaturePreview').src = dataUrl;
     });
 
     function captureAndSubmit() {
+      const button = document.getElementById("sendButton");
+      button.disabled = true;
+      button.innerText = "寄送中...";
+
       const container = document.getElementById("signatureArea");
       html2canvas(container).then(canvas => {
         const base64Image = canvas.toDataURL("image/png").split(",")[1];
         document.getElementById("image_data").value = base64Image;
-        document.getElementById("sendForm").submit();  // <<< 這行是關鍵
+        document.getElementById("sendForm").submit();  // 送出表單
       });
     }
   </script>
