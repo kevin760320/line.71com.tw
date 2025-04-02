@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>簽名頁面</title>
   <style>
     html, body {
@@ -34,32 +34,19 @@
       justify-content: center;
       user-select: none;
     }
-    #message {
-      position: absolute;
-      color: red;
-      font-size: 60px; /* 字體大小調整為原本的1.5倍 */
-      font-weight: bold;
-      pointer-events: none;
-      user-select: none;
-      text-align: center;
-      width: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-    }
   </style>
 </head>
 <body>
   <canvas id="signatureCanvas"></canvas>
-  <div id="finishBtn">完成</div>
-  <div id="message" style="display:none;"></div>
+  <div id="finishBtn">完成簽名</div>
 
   <script>
     const canvas = document.getElementById('signatureCanvas');
     const ctx = canvas.getContext('2d');
     const finishBtn = document.getElementById('finishBtn');
-    const message = document.getElementById('message');
     let drawing = false;
 
+    // 初始化畫布大小與筆觸
     function resizeCanvas() {
       canvas.width = 800;
       canvas.height = 500;
@@ -69,12 +56,13 @@
     }
     resizeCanvas();
 
-    canvas.addEventListener('mousedown', (e) => {
+    // 滑鼠繪製
+    canvas.addEventListener('mousedown', e => {
       drawing = true;
       ctx.beginPath();
       ctx.moveTo(e.offsetX, e.offsetY);
     });
-    canvas.addEventListener('mousemove', (e) => {
+    canvas.addEventListener('mousemove', e => {
       if (drawing) {
         ctx.lineTo(e.offsetX, e.offsetY);
         ctx.stroke();
@@ -83,14 +71,15 @@
     canvas.addEventListener('mouseup', () => drawing = false);
     canvas.addEventListener('mouseleave', () => drawing = false);
 
-    canvas.addEventListener('touchstart', (e) => {
+    // 觸控繪製
+    canvas.addEventListener('touchstart', e => {
       drawing = true;
       const rect = canvas.getBoundingClientRect();
       const touch = e.touches[0];
       ctx.beginPath();
       ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
     });
-    canvas.addEventListener('touchmove', (e) => {
+    canvas.addEventListener('touchmove', e => {
       if (drawing) {
         e.preventDefault();
         const rect = canvas.getBoundingClientRect();
@@ -101,64 +90,25 @@
     });
     canvas.addEventListener('touchend', () => drawing = false);
 
+    // 完成簽名按鈕
     finishBtn.addEventListener('click', finishSignature);
-    finishBtn.addEventListener('touchend', (e) => {
+    finishBtn.addEventListener('touchend', e => {
       e.preventDefault();
       finishSignature();
     });
 
+    // 儲存圖片 + 回傳給主頁 + 關閉視窗
     function finishSignature() {
-      finishBtn.style.display = 'none';
-
       const dataUrl = canvas.toDataURL('image/png');
       localStorage.setItem('signatureData', dataUrl);
 
-      showCountdownMessage(10);
-    }
+      // 通知主頁更新簽名圖
+      if (window.opener) {
+        window.opener.postMessage({ type: "signatureSaved" }, "*");
+      }
 
-    function showCountdownMessage(seconds) {
-      message.style.display = 'block';
-      message.style.color = 'red';
-      updateMessagePosition();
-      let countdown = seconds;
-
-      const interval = setInterval(() => {
-        message.textContent = `系統為您處理中，請稍後 (${countdown}) 秒⋯`;
-        countdown--;
-
-        if (countdown < 0) {
-          clearInterval(interval);
-          message.textContent = '請點擊返回上一頁按鈕';
-          message.style.color = 'green';
-          createBackButton();
-        }
-      }, 1000);
-    }
-
-    function updateMessagePosition() {
-      const rect = canvas.getBoundingClientRect();
-      message.style.top = `${rect.top + rect.height / 2 - 40}px`;
-    }
-
-    window.addEventListener('resize', updateMessagePosition);
-
-    function createBackButton() {
-      const backBtn = document.createElement('div');
-      backBtn.textContent = '返回上一頁';
-      backBtn.style.cssText = `
-        margin-top: 20px;
-        width: 150px;
-        height: 50px;
-        font-size: 18px;
-        background-color: #4CAF50;
-        color: #fff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-      `;
-      backBtn.onclick = () => window.location.href = document.referrer;
-      document.body.appendChild(backBtn);
+      // 自動關閉簽名頁
+      window.close();
     }
   </script>
 </body>
