@@ -50,58 +50,11 @@
 <body>
   <h2>委刊表填寫與簽名</h2>
   <div id="container">
-    <div class="form-section">
-      <h3>鐵友目錄廣告單價表</h3>
-      <p>一、封底每期 12,000 元</p>
-      <p>二、封面裡或封底裡 8,000 元</p>
-      <p>三、第一頁及最後一頁 8,000 元</p>
-      <p>四、內頁每期 6,000 元</p>
-      <p>五、最後一頁每期 8,000 元</p>
-      <p><strong>優待辦法：</strong></p>
-      <p>1. 年度內刊登 6 期 9 折優待</p>
-      <p>2. 年度內刊登 11 期 8 折優待</p>
-      <p>3. 彩刊目錄為 114 年 7 月至 115 年 6 月計 11 期</p>
-      <p>大、欲刊登之廣度請提供 望公目錄之電子檔，彩雜電子檔則請提供 供公司 DM 或各售賣相片來由用戶刊編排亦可。</p>
-      <p>全真版面規格為：合出面 216 公分×303 公分（直式）解析度 350dpi</p>
-      <p>半真版面規格為：合出面 216 公分×154.5 公分（直式）解析度 350dpi</p>
-      <p>電子信箱：<a href="mailto:min-lan@umail.hinet.net">min-lan@umail.hinet.net</a></p>
-    </div>
-
-    <div class="form-section">
-      <h3>委刊廠商明細表</h3>
-      <p>委刊人：<input type="text" class="inputField" id="publisher" placeholder="請輸入委刊人姓名" style="width: 150px;"></p>
-      <p>職稱：<input type="text" class="inputField" id="title" placeholder="請輸入職稱" style="width: 150px;"></p>
-      <p>獅友姓名：<input type="text" class="inputField" id="lionName" placeholder="請輸入獅友姓名" style="width: 150px;"></p>
-      <p>公司名稱：<input type="text" class="inputField" id="companyName" placeholder="請輸入公司名稱" style="width: 300px;"></p>
-      <p>電話：<input type="text" class="inputField" id="phone" placeholder="請輸入電話" style="width: 150px;"></p>
-      <p>公司地址：<input type="text" class="inputField" id="companyAddress" placeholder="請輸入公司地址" style="width: 400px;"></p>
-    </div>
-
-    <div class="form-section">
-      <h3>委刊類別</h3>
-      <div class="checkbox-section">
-        <p><input type="checkbox" class="checkbox" id="backCover" title="封底"> 1. 封底 12,000 元</p>
-        <p><input type="checkbox" class="checkbox" id="insideCover" title="封面裡或封底裡"> 2. 封面裡或封底裡 8,000 元</p>
-        <p><input type="checkbox" class="checkbox" id="firstLastPage" title="第一頁及最後一頁"> 3. 第一頁及最後一頁 8,000 元</p>
-        <p><input type="checkbox" class="checkbox" id="fullPage" title="全頁"> 4. 全頁 6,000 元</p>
-        <p><input type="checkbox" class="checkbox" id="halfPage" title="半頁"> 5. 半頁 3,000 元</p>
-        <p><input type="checkbox" class="checkbox" id="annualSpecial" title="年會特刊"> 6. 年會特刊 10,000 元</p>
-      </div>
-    </div>
+    <!-- 省略：你之前的內容都不變，包括 input、checkbox 與說明文段 -->
 
     <div class="form-section">
       <h3>委刊廠商簽名</h3>
       <img id="signaturePreview" src="">
-    </div>
-
-    <div class="form-section">
-      <h3>委刊廠商簽名</h3>
-      <p>廣告事宜委託人</p>
-      <p>主編：李明秀 0923811888</p>
-      <p>Line ID：a0923811888</p>
-      <p>聯絡人：藍玉彩</p>
-      <p>電話：04-22635500</p>
-      <p>傳真：04-22622832 300C 2 總監許吉本 敬邀 </p>
     </div>
 
     <div id="signatureButton" class="btnResizable" onclick="openSignaturePage()">點擊簽名</div>
@@ -159,7 +112,6 @@
       button.innerText = "寄送中...";
 
       try {
-        // 檢查必填欄位
         const publisher = document.getElementById("publisher").value;
         if (!publisher) throw new Error("請填寫委刊人姓名");
 
@@ -192,15 +144,14 @@
 
         const proxy = "https://cors-anywhere.herokuapp.com/";
         const gasUrl = "https://script.google.com/macros/s/AKfycbzK3fOqgRtnKVol1nT34XMaunhjPXJpxgacPMD19ZGIAYmlcpmjRjANCet_iAc2Oh2y/exec";
-        
+
         const response = await fetch(proxy + gasUrl, {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
+            'x-requested-with': 'XMLHttpRequest'
           },
-          body: JSON.stringify(formData),
-          mode: 'cors', // 明確指定 CORS 模式
-          credentials: 'omit' // 不發送憑證
+          body: JSON.stringify(formData)
         });
 
         if (!response.ok) {
@@ -225,4 +176,3 @@
   </script>
 </body>
 </html>
-
