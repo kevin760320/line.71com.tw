@@ -190,7 +190,7 @@
           image_data: base64Image
         };
 
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzbVh1JQ7jpAahtOG_7aur7Zyet82j5ySDmM264mnP4ouIlEmwqdDUnkXVnBqWtIHi4/exec', {
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: "POST",
           headers: {
             'Content-Type': 'application/json',
